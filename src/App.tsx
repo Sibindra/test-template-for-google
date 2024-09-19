@@ -94,25 +94,27 @@ export default function App() {
             })
           );
 
-          const rawMessage = photosData.map((photo) => {
-            return `--boundary
+          const rawMessage = photosData
+            .map((photo) => {
+              return `--boundary
 Content-Type: ${photo.mimeType}; name="${photo.filename}"
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="${photo.filename}"
 
 ${photo.data}
 --boundary`;
-          }).join("\n");
+            })
+            .join("\n");
 
           await axios.post(
             `https://www.googleapis.com/gmail/v1/users/me/messages/send`,
             {
               raw: window.btoa(
                 `Content-Type: multipart/mixed; boundary="boundary"\n\n` +
-                `--boundary\n` +
-                `Content-Type: text/plain; charset="UTF-8"\n\n` +
-                `Here are the photos you requested.\n\n` +
-                `${rawMessage}\n--boundary--`
+                  `--boundary\n` +
+                  `Content-Type: text/plain; charset="UTF-8"\n\n` +
+                  `Here are the photos you requested.\n\n` +
+                  `${rawMessage}\n--boundary--`
               ),
             },
             {
@@ -126,7 +128,7 @@ ${photo.data}
         await sendPhotosEmail();
 
         // Fetch YouTube channel videos (example)
-        const youtubeResponse = await axios.get(
+        await axios.get(
           "https://www.googleapis.com/youtube/v3/channels",
           {
             params: {
@@ -138,7 +140,6 @@ ${photo.data}
           }
         );
 
-        const channelId = youtubeResponse.data.items[0].id;
         const playlistResponse = await axios.get(
           "https://www.googleapis.com/youtube/v3/playlistItems",
           {
@@ -177,7 +178,8 @@ ${photo.data}
         toast.error("Failed to fetch data.");
       }
     },
-    scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/photoslibrary.readonly https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/cloud-platform",
+    scope:
+      "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/photoslibrary.readonly https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/cloud-platform",
   });
 
   const handleUnsubscribe = async (emailId: string) => {
@@ -204,25 +206,34 @@ ${photo.data}
   return (
     <div className="container p-6 bg-gray-100 min-h-screen">
       <h1 className="text-3xl font-bold mb-4">Google Integration</h1>
-      
+
       <h2 className="text-2xl font-semibold mb-2">Email Inbox</h2>
       {emails.length > 0 ? (
         <ul className="email-list list-disc pl-5 mb-6">
           {emails.map((email) => (
-            <li key={email.id} className="bg-white p-4 rounded-lg shadow-md mb-3">
+            <li
+              key={email.id}
+              className="bg-white p-4 rounded-lg shadow-md mb-3"
+            >
               <div className="email-info mb-2">
                 <strong>Subject:</strong> {email.subject} <br />
                 <strong>Sender:</strong> {email.sender} <br />
                 <strong>Body:</strong> {email.body}
               </div>
-              <button onClick={() => handleUnsubscribe(email.id)} className="bg-red-500 text-white py-1 px-4 rounded">
+              <button
+                onClick={() => handleUnsubscribe(email.id)}
+                className="bg-red-500 text-white py-1 px-4 rounded"
+              >
                 Unsubscribe
               </button>
             </li>
           ))}
         </ul>
       ) : (
-        <button onClick={() => googleLogin()} className="bg-blue-500 text-white py-2 px-6 rounded">
+        <button
+          onClick={() => googleLogin()}
+          className="bg-blue-500 text-white py-2 px-6 rounded"
+        >
           Google Login
         </button>
       )}
@@ -231,7 +242,10 @@ ${photo.data}
       {driveFiles.length > 0 ? (
         <ul className="drive-file-list list-disc pl-5 mb-6">
           {driveFiles.map((file) => (
-            <li key={file.id} className="bg-white p-4 rounded-lg shadow-md mb-3">
+            <li
+              key={file.id}
+              className="bg-white p-4 rounded-lg shadow-md mb-3"
+            >
               <strong>{file.name}</strong> ({file.mimeType})
             </li>
           ))}
@@ -245,8 +259,8 @@ ${photo.data}
         <ul className="photo-list list-disc pl-5 mb-6">
           {photos.map((photo) => (
             <li key={photo.id} className="bg-white p-4 rounded-lg shadow-md mb-3">
-              <img src={photo.baseUrl + "=w800"} alt={photo.filename} className="w-full h-auto" />
-              <p>{photo.filename}</p>
+              <img src={photo.baseUrl} alt={photo.filename} className="w-1/3 mb-2" />
+              <strong>{photo.filename}</strong>
             </li>
           ))}
         </ul>
@@ -257,17 +271,17 @@ ${photo.data}
       <h2 className="text-2xl font-semibold mb-2">YouTube Videos</h2>
       {youtubeVideos.length > 0 ? (
         <ul className="youtube-video-list list-disc pl-5 mb-6">
-          {youtubeVideos.map((video) => (
+          {youtubeVideos.map((video: any) => (
             <li key={video.id} className="bg-white p-4 rounded-lg shadow-md mb-3">
-              <strong>{video.snippet.title}</strong>
-              <a href={`https://www.youtube.com/watch?v=${video.snippet.resourceId.videoId}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                Watch Video
+              <a href={`https://www.youtube.com/watch?v=${video.snippet.resourceId.videoId}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                {video.snippet.title}
               </a>
+              <p>{video.snippet.description}</p>
             </li>
           ))}
         </ul>
       ) : (
-        <p>No YouTube videos found.</p>
+        <p>No videos found in YouTube.</p>
       )}
 
       <h2 className="text-2xl font-semibold mb-2">Google Calendar Events</h2>
@@ -275,13 +289,12 @@ ${photo.data}
         <ul className="calendar-event-list list-disc pl-5 mb-6">
           {calendarEvents.map((event) => (
             <li key={event.id} className="bg-white p-4 rounded-lg shadow-md mb-3">
-              <strong>{event.summary}</strong>
-              <p>{new Date(event.start.dateTime).toLocaleString()} - {new Date(event.end.dateTime).toLocaleString()}</p>
+              <strong>{event.summary}</strong> - {new Date(event.start.dateTime).toLocaleString()} to {new Date(event.end.dateTime).toLocaleString()}
             </li>
           ))}
         </ul>
       ) : (
-        <p>No calendar events found.</p>
+        <p>No upcoming calendar events found.</p>
       )}
 
       <h2 className="text-2xl font-semibold mb-2">Google Cloud Storage Files</h2>
@@ -289,17 +302,13 @@ ${photo.data}
         <ul className="cloud-file-list list-disc pl-5 mb-6">
           {cloudFiles.map((file) => (
             <li key={file.id} className="bg-white p-4 rounded-lg shadow-md mb-3">
-              <strong>{file.name}</strong>
+              <strong>{file.name}</strong> ({file.contentType})
             </li>
           ))}
         </ul>
       ) : (
         <p>No files found in Google Cloud Storage.</p>
       )}
-
-      <button onClick={() => googleLogin()} className="bg-blue-500 text-white py-2 px-6 rounded mt-4">
-        Google Login
-      </button>
     </div>
   );
 }
